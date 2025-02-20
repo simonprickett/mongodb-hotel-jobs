@@ -25,9 +25,10 @@ while True:
 
         print("Performing job...")
         time.sleep(random.randint(10, 20))
-        r = collection.update_one({ "_id": job["_id"] }, { "$set": { "completedAt": int(time.time() * 1000), "completedBy": random.randint(1, 5)} })
+        staff_id = random.randint(1, 5)
+        r = collection.update_one({ "_id": job["_id"] }, { "$set": { "completedAt": int(time.time() * 1000), "completedBy": staff_id} })
 
-        print("Completed job.")
+        print(f"Staff ID {staff_id} completed job {job['_id']}.")
 
     if not found_job:
         print("No outstanding jobs to do right now!")
