@@ -1,8 +1,10 @@
-# MongoDB/CrateDB CDC Demonstration
+# MongoDB/CrateDB/Grafana CDC Demonstration
 
 ## Introduction
 
 TODO
+
+![Screenshot of the Grafana Dashboard](grafana_dashboard_screenshot.png)
 
 ## Prerequisites
 
