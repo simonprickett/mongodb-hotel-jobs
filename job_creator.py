@@ -33,4 +33,5 @@ while True:
     print(f"Inserted {response.inserted_id}:")
     print(job)
     
+    print("Sleeping until the next job comes in...")
     time.sleep(random.randint(5, 10))
