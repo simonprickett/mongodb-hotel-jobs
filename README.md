@@ -6,41 +6,30 @@ TODO
 
 ## Prerequisites
 
-TODO
+To run this project you'll need to install the following software:
 
-## Getting Started
+* Python 3 ([download](https://www.python.org/downloads/)) - we've tested this project with Python 3.12 on macOS Sequoia.
+* Git command line tools ([download](https://git-scm.com/downloads)).
+* Your favorite code editor, to edit configuration files and browse/edit the code if you wish.  [Visual Studio Code](https://code.visualstudio.com/) is great for this.
+* Access to an instance of CrateDB in the cloud.
+* Access to an instance of MongoDB in the cloud.
+
+## Getting the Code
+
+Grab a copy of the code from GitHub by cloning the repository.  Open up your terminal and change directory to wherever you store coding projects, then enter the following commands:
 
 ```bash
 git clone https://github.com/simonprickett/mongodb-hotel-jobs.git
 cd mongodb-hotel-jobs
 ```
 
-```bash
-python -m venv venv
-. ./venv/bin/activate
-```
+## Getting a CrateDB Database in the Cloud
 
-```bash
-pip install -r requirements.txt
-```
+TODO
 
-```bash
-cp env.example .env
-```
+### Database Schema Setup
 
-* TODO set up `.env`
-
-```bash
-python job_creator.py
-```
-
-```bash
-python job_completer.py
-```
-
-## CrateDB Setup
-
-### Create and Populate staff Table
+TODO
 
 ```sql
 CREATE TABLE staff (
@@ -60,13 +49,56 @@ VALUES
   (5, 'Alea');
 ```
 
+## Getting a MongoDB Database in the Cloud
+
+## Editing the Project Configuration File
+
+TODO
+
+```bash
+cp env.example .env
+```
+
+## Setting up a Python Environment
+
+You should create and activate a Python Virtual Environment to install this project's dependencies into.  To do this, run the following commands:
+
+```bash
+python -m venv venv
+. ./venv/bin/activate
+```
+
+Now install the dependencies that this project requires:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Running the Python Code
+
+### Job Creator Component
+
+TODO
+
+```bash
+python job_creator.py
+```
+
+### Job Completer Component
+
+TODO
+
+```bash
+python job_completer.py
+```
+
 ### Some Example Queries
 
 #### mflix Movies Example
 
 What were the top 10 highest rated movies released in 2014, according to Rotton Tomatoes reviewers?
 
-```
+```sql
 select
   document['title'] as title,
   document['tomatoes'] ['viewer'] ['rating'] as rotten_tomatoes_rating
