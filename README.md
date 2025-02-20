@@ -1,7 +1,19 @@
-# TODO
+# MongoDB/CrateDB CDC Demonstration
 
-* TODO clone repo
-* TODO set up `.env`
+## Introduction
+
+TODO
+
+## Prerequisites
+
+TODO
+
+## Getting Started
+
+```bash
+git clone https://github.com/simonprickett/mongodb-hotel-jobs.git
+cd mongodb-hotel-jobs
+```
 
 ```bash
 python -m venv venv
@@ -16,6 +28,8 @@ pip install -r requirements.txt
 cp env.example .env
 ```
 
+* TODO set up `.env`
+
 ```bash
 python job_creator.py
 ```
@@ -24,7 +38,7 @@ python job_creator.py
 python job_completer.py
 ```
 
-## CrateDB
+## CrateDB Setup
 
 ### Create and Populate staff Table
 
@@ -36,10 +50,67 @@ CREATE TABLE staff (
 ```
 
 ```sql
-INSERT INTO staff (id, name) VALUES (1, 'Simon'), (2, 'Alice'), (3, 'Michael'), (4, 'Stefan'), (5, 'Alea');
+INSERT INTO
+  staff (id, name)
+VALUES
+  (1, 'Simon'),
+  (2, 'Alice'),
+  (3, 'Michael'),
+  (4, 'Stefan'),
+  (5, 'Alea');
 ```
 
 ### Some Example Queries
+
+#### mflix Movies Example
+
+What were the top 10 highest rated movies released in 2014, according to Rotton Tomatoes reviewers?
+
+```
+select
+  document['title'] as title,
+  document['tomatoes'] ['viewer'] ['rating'] as rotten_tomatoes_rating
+from
+  movies
+where
+  document['year'] = 2014 and document['tomatoes'] ['viewer'] ['rating'] is not null
+order by
+  rotten_tomatoes_rating desc
+limit
+  10
+```
+
+What is the average run time of comedy movies for each year 2010 onwards?
+
+```sql
+select
+  document['year'] as year,
+  avg(document['runtime']) as average_runtime
+from
+  movies
+where
+  document['year'] > 2009
+  and document['genres'] [1] = 'Comedy'
+group by
+  year
+order by
+  year desc
+```
+
+Which films is a given actor in?
+
+```sql
+select
+  document['title'] as title,
+  document['year'] as year,
+  document['cast'] as cast_members
+from
+  movies
+where
+  array_position(document['cast'], 'Julia Kijowska') is not null
+```
+
+#### Jobs Example
 
 How many jobs are outstanding?
 
@@ -106,3 +177,7 @@ group by
 order by
   jobs_completed desc
 ```
+
+## CrateDB Academy
+
+Want to learn more about CrateDB?  Take our free online "CrateDB Fundamentals" course, available now at the [CrateDB Academy](https://cratedb.com/academy/fundamentals/).
