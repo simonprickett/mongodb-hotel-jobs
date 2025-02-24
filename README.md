@@ -100,7 +100,7 @@ python job_completer.py
 
 #### mflix Movies Example
 
-What were the top 10 highest rated movies released in 2014, according to Rotton Tomatoes reviewers?
+What were the top 10 highest rated movies released in 2014, according to Rotten Tomatoes reviewers?
 
 ```sql
 select
