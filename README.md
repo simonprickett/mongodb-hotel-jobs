@@ -4,9 +4,13 @@
 
 This is a small Python project that demonstrates how a CrateDB database can be populated and kept in sync with a collection in MongoDB using Change Data Capture (CDC).  Before configuring and running this project, you should watch our [video walkthrough](https://www.youtube.com/watch?v=N8n-yg3ru8I).
 
-The project includes the Python scripts to create and update jobs in MongoDB, as well as an (optional) Grafana dashboard exported as a JSON file.
+This project uses a hotel's front desk for its sample data.  Imagine that guests can visit the front desk, or use the phone or the hotel's app to request different service items.  Each request raises a job (for example "provide fresh towels", "call a taxi", "order room service food") that is associated with a room number.
 
-TODO what is the premise?
+These jobs are stored as documents in a collection in MongoDB, and are updated periodically as staff members complete them - adding a completion time and the ID of the staff member who did the work.
+
+This data is then replicated to CrateDB for analysis and visualization in Grafana.
+
+The project includes Python scripts to create and update jobs in MongoDB, as well as an (optional) Grafana dashboard exported as a JSON file.
 
 ![Screenshot of the Grafana Dashboard](grafana_dashboard_screenshot.png)
 
