@@ -2,7 +2,11 @@
 
 ## Introduction
 
-TODO
+This is a small Python project that demonstrates how a CrateDB database can be populated and kept in sync with a collection in MongoDB using Change Data Capture (CDC).  Before configuring and running this project, you should watch our [video walkthrough](https://www.youtube.com/watch?v=N8n-yg3ru8I).
+
+The project includes the Python scripts to create and update jobs in MongoDB, as well as an (optional) Grafana dashboard exported as a JSON file.
+
+TODO what is the premise?
 
 ![Screenshot of the Grafana Dashboard](grafana_dashboard_screenshot.png)
 
@@ -13,8 +17,9 @@ To run this project you'll need to install the following software:
 * Python 3 ([download](https://www.python.org/downloads/)) - we've tested this project with Python 3.12 on macOS Sequoia.
 * Git command line tools ([download](https://git-scm.com/downloads)).
 * Your favorite code editor, to edit configuration files and browse/edit the code if you wish.  [Visual Studio Code](https://code.visualstudio.com/) is great for this.
-* Access to an instance of CrateDB in the cloud.
-* Access to an instance of MongoDB in the cloud.
+* Access to an instance of [CrateDB](https://console.cratedb.cloud) in the cloud.
+* Access to an instance of [MongoDB](https://www.mongodb.com/cloud/atlas/register) in the cloud.
+* Optional: Access to an instance of [Grafana](https://grafana.com/get/) in the cloud.
 
 ## Getting the Code
 
@@ -27,11 +32,26 @@ cd mongodb-hotel-jobs
 
 ## Getting a CrateDB Database in the Cloud
 
-TODO
+Create a database in the cloud by first pointing your browser at [`console.cratedb.cloud`](https://console.cratedb.cloud/).
 
-### Database Schema Setup
+Login or create an account, then follow the prompts to create a "CRFREE" database on shared infrastructure in the cloud of your choice (choose from Amazon AWS, Microsoft Azure and Google Cloud).  
 
-TODO
+Once you've created your cluster, you'll see a "Download" button.  This downloads a text file containing a copy of your database hostname, port, username and password.  Make sure to download these as you'll need them later and won't see them again.  Your credentials will look something like this example (exact values will vary based on your choice of AWS/Google Cloud/Azure etc):
+
+```
+Host:              some-host-name.gke1.us-central1.gcp.cratedb.net
+Port (PostgreSQL): 5432
+Port (HTTPS):      4200
+Database:          crate
+Username:          admin
+Password:          the-password-will-be-here
+```
+
+Wait until the cluster status shows a green status icon and "Healthy" status before continuing.  Note that it may take a few moments to provision your database.
+
+### Database Schema Setup (CrateDB)
+
+This demo uses two tables, `jobs` and `staff`.  The `jobs` table is created by the CDC data synchronization process.  You'll need to create the `staff` table yourself by running the following SQL statements at your CrateDB console:
 
 ```sql
 CREATE TABLE staff (
@@ -53,15 +73,41 @@ VALUES
 
 ## Getting a MongoDB Database in the Cloud
 
-TODO
+You'll need to create a MongoDB database in the cloud - do this for free with [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register).
+
+Create an empty collection called `jobs` in your new MongoDB instance.
+
+You should also create a role, a user, and configure IP access for CrateDB's CDC process.  Instructions for these steps can be found [here](https://cratedb.com/docs/cloud/en/latest/cluster/integrations/mongo-cdc.html#set-up-mongodb-atlas-authentication).
+
+## Setting up CDC from CrateDB Cloud
+
+The next step is to set up a CDC integration in your CrateDB Cloud cluster.  Follow our instructions [here](https://cratedb.com/docs/cloud/en/latest/cluster/integrations/mongo-cdc.html#set-up-integration-in-cratedb-cloud) to do this.
+
+When setting up the target table, be sure to name it `jobs`, and to select `dynamic` as the object type in the dropdown.
 
 ## Editing the Project Configuration File
 
-TODO
+The Python scripts use a `.env` file to store the MongoDB connection details in.  We've provided a template file that you can copy like this:
 
 ```bash
 cp env.example .env
 ```
+
+Now, edit `.env` as follows:
+
+Set the value of `MONGODB_URI` to be:
+
+`mongodb+srv://<username>:<password>>@<hostname>/?retryWrites=true&w=majority`
+
+replacing `<username>`, `<password>` and `<hostname>` with the values for your MongoDB Atlas cluster.
+
+Set the value of `MONGODB_DATABASE` to be the name of the database in your MongoDB Atlas cluster.
+
+Set the value of `MONGODB_COLLECTION` to be `jobs`.
+
+Save your changes.
+
+Remember, this file contains secrets... don't commit it to source control!
 
 ## Setting up a Python Environment
 
@@ -82,73 +128,31 @@ pip install -r requirements.txt
 
 ### Job Creator Component
 
-TODO
+Run the job creator component to create new job documents in the `jobs` collection in MongoDB.  It will generate a random job, add it to the collection, then sleep for a random time before repeating the process.
 
 ```bash
 python job_creator.py
 ```
 
+You can stop the job creator with `Ctrl-C`.
+
 ### Job Completer Component
 
-TODO
+Run the job completer component to update existing job documents in the `jobs` collection.  This component picks the oldest outstanding job in the collection, sleeps for a while to pretend to perform the work required, then updates the job with a completion time and a randomly chosen staff ID for the staff member that completed the job.
 
 ```bash
 python job_completer.py
 ```
 
-### Some Example Queries
+You can stop the job completer with `Ctrl-C`.
 
-#### mflix Movies Example
+To simulate constant workflow through the databases, run both the job creator and the job completer at the same time.
 
-What were the top 10 highest rated movies released in 2014, according to Rotten Tomatoes reviewers?
+## Some Example SQL Queries
 
-```sql
-select
-  document['title'] as title,
-  document['tomatoes'] ['viewer'] ['rating'] as rotten_tomatoes_rating
-from
-  movies
-where
-  document['year'] = 2014 and document['tomatoes'] ['viewer'] ['rating'] is not null
-order by
-  rotten_tomatoes_rating desc
-limit
-  10
-```
+Once you have data flowing from MongoDB to your CrateDB cluster, you can start to run some SQL queries.  At the CrateDB console, try some of these example queries.
 
-What is the average run time of comedy movies for each year 2010 onwards?
-
-```sql
-select
-  document['year'] as year,
-  avg(document['runtime']) as average_runtime
-from
-  movies
-where
-  document['year'] > 2009
-  and document['genres'] [1] = 'Comedy'
-group by
-  year
-order by
-  year desc
-```
-
-Which films is a given actor in?
-
-```sql
-select
-  document['title'] as title,
-  document['year'] as year,
-  document['cast'] as cast_members
-from
-  movies
-where
-  array_position(document['cast'], 'Julia Kijowska') is not null
-```
-
-#### Jobs Example
-
-How many jobs are outstanding?
+### How many jobs are outstanding?
 
 ```sql
 select
@@ -159,7 +163,7 @@ where
   document['completedAt'] is null;
 ```
 
-How many jobs have been completed?
+### How many jobs have been completed?
 
 ```sql
 select
@@ -170,7 +174,7 @@ where
   document['completedAt'] is not null;
 ```
 
-Outstanding jobs by type:
+### Outstanding jobs by type:
 
 ```sql
 select
@@ -186,7 +190,7 @@ order by
   backlog desc
 ```
 
-Average time to complete a job:
+### Average time to complete a job:
 
 ```sql
 select
@@ -197,7 +201,7 @@ where
   document['completedAt'] is not null
 ```
 
-League table of who has completed the most jobs:
+### League table of who has completed the most jobs:
 
 ```sql
 select
@@ -213,6 +217,12 @@ group by
 order by
   jobs_completed desc
 ```
+
+## Optional: Grafana Dashboard
+
+The file `grafana_dashboard.json` contains an export of a [Grafana](https://grafana.com/get/) dashboard that visualizes some of the above queries. 
+
+To use this, you'll need to sign up for a free Grafana cloud instance and connect it to your CreateDB cloud cluster using a Posgres data source (see [Grafana documentation](https://grafana.com/docs/grafana/latest/datasources/postgres/)).
 
 ## CrateDB Academy
 
