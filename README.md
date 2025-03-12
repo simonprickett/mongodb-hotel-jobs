@@ -30,8 +30,8 @@ To run this project you'll need to install the following software:
 Grab a copy of the code from GitHub by cloning the repository.  Open up your terminal and change directory to wherever you store coding projects, then enter the following commands:
 
 ```bash
-git clone https://github.com/simonprickett/mongodb-hotel-jobs.git
-cd mongodb-hotel-jobs
+git clone https://github.com/crate/devrel-mongo-cdc-demo.git
+cd devrel-mongo-cdc-demo
 ```
 
 ## Getting a CrateDB Database in the Cloud
